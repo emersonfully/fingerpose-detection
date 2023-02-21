@@ -1,3 +1,4 @@
+import { gestures } from "./gestures.js"
 
 const config = {
     video: { width: 640, height: 480, fps: 30 }
@@ -14,7 +15,12 @@ const landmarkColors = {
 
 const gestureStrings = {
     'thumbs_up': '👍',
-    'victory': '✌🏻'
+    'victory': '✌🏻',
+    'rock': "✊️",
+    'paper': '✋',
+    'scissors': '✌',
+    'hangloose': '🤙',
+    'rocknroll': '🤘'
 }
 
 async function createDetector() {
@@ -43,7 +49,8 @@ async function main() {
     // add "✌🏻" and "👍" as sample gestures
     const knownGestures = [
         fp.Gestures.VictoryGesture,
-        fp.Gestures.ThumbsUpGesture
+        fp.Gestures.ThumbsUpGesture,
+        ...gestures
     ]
     const GE = new fp.GestureEstimator(knownGestures)
     // load handpose model
@@ -70,16 +77,20 @@ async function main() {
                 drawPoint(ctx, keypoint.x, keypoint.y, 3, color)
             }
 
-            const est = GE.estimate(hand.keypoints3D, 9)
-            if (est.gestures.length > 0) {
+            const keypoints3D = hand.keypoints3D.map(keypoint => [keypoint.x, keypoint.y, keypoint.z])
+            const prediction = GE.estimate(keypoints3D, 9)
+            if (prediction.gestures.length) {
+                updateDebugInfo(prediction.poseData, 'left')
+            }
+            if (prediction.gestures.length > 0) {
 
                 // find gesture with highest match score
-                let result = est.gestures.reduce((p, c) => {
+                let result = prediction.gestures.reduce((p, c) => {
                     return (p.score > c.score) ? p : c
                 })
                 const chosenHand = hand.handedness.toLowerCase()
                 resultLayer[chosenHand].innerText = gestureStrings[result.name]
-                updateDebugInfo(est.poseData, chosenHand)
+                updateDebugInfo(prediction.poseData, chosenHand)
             }
 
         }
