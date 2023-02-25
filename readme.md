@@ -13,4 +13,5 @@ Finger gesture classifier for multiple hand landmarks detected by [MediaPipe Han
 ## Usage
 
 `npm i` => install dependencies;
+
 `npm start` => Start a local server;
